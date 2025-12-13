@@ -20,28 +20,8 @@ interface ExperienceProps {
   signatureText?: string;
 }
 
-// COLORS FOR REALISTIC OBJECTS
-const BALL_COLORS = [
-    '#8B0000', // Dark Red
-    '#D32F2F', // Bright Red
-    '#1B5E20', // Dark Green
-    '#D4AF37', // Gold 
-    '#C0C0C0', // Silver
-    '#191970'  // Midnight Blue
-]; 
-
-const BOX_COLORS = [
-    '#800000', // Maroon
-    '#1B5E20', // Forest Green
-    '#D4AF37', // Gold
-    '#FFFFFF', // White
-    '#4B0082', // Indigo/Deep Purple
-    '#2F4F4F', // Dark Slate Gray
-    '#008080', // Teal
-    '#8B4513', // Bronze/SaddleBrown
-    '#DC143C'  // Crimson
-];
-
+const BALL_COLORS = ['#8B0000', '#D32F2F', '#1B5E20', '#D4AF37', '#C0C0C0', '#191970']; 
+const BOX_COLORS = ['#800000', '#1B5E20', '#D4AF37', '#FFFFFF', '#4B0082', '#2F4F4F', '#008080', '#8B4513', '#DC143C'];
 const STAR_COLORS = ['#FFD700', '#FDB931']; 
 const CRYSTAL_COLORS = ['#F0F8FF', '#E0FFFF', '#B0E0E6']; 
 const CANDY_COLORS = ['#FFFFFF']; 
@@ -52,11 +32,9 @@ const SceneController: React.FC<{
 }> = ({ inputRef, groupRef }) => {
     const { camera, gl } = useThree();
     const vec = useMemo(() => new THREE.Vector3(), []);
-    
     const zoomTarget = useRef(32); 
     const isDragging = useRef(false);
     const lastPointerX = useRef(0);
-    const lastTouchDistance = useRef<number | null>(null);
     const rotationVelocity = useRef(0.002);
     const wasDetected = useRef(false);
     const grabOffset = useRef(0);
@@ -65,13 +43,11 @@ const SceneController: React.FC<{
     useEffect(() => {
         const canvas = gl.domElement;
         canvas.style.touchAction = 'none';
-
         const onWheel = (e: WheelEvent) => {
             e.preventDefault();
             zoomTarget.current += e.deltaY * 0.02;
             zoomTarget.current = THREE.MathUtils.clamp(zoomTarget.current, 12, 55);
         };
-
         const onPointerDown = (e: PointerEvent) => {
             if (e.isPrimary && e.button === 0) { 
                 isDragging.current = true;
@@ -80,16 +56,14 @@ const SceneController: React.FC<{
                 rotationVelocity.current = 0;
             }
         };
-
         const onPointerUp = (e: PointerEvent) => {
             if (e.isPrimary) {
                 isDragging.current = false;
                 canvas.releasePointerCapture(e.pointerId);
             }
         };
-
         const onPointerMove = (e: PointerEvent) => {
-            if (e.isPrimary && isDragging.current && groupRef.current && lastTouchDistance.current === null) {
+            if (e.isPrimary && isDragging.current && groupRef.current) {
                 const deltaX = e.clientX - lastPointerX.current;
                 lastPointerX.current = e.clientX;
                 const rotationAmount = deltaX * 0.005;
@@ -97,57 +71,15 @@ const SceneController: React.FC<{
                 rotationVelocity.current = rotationAmount;
             }
         };
-
-        const onTouchStart = (e: TouchEvent) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastTouchDistance.current = Math.sqrt(dx * dx + dy * dy);
-            }
-        };
-
-        const onTouchMove = (e: TouchEvent) => {
-            if (e.touches.length === 2) {
-                if (e.cancelable) e.preventDefault();
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (lastTouchDistance.current !== null) {
-                    const diff = lastTouchDistance.current - distance;
-                    const sensitivity = 0.15;
-                    zoomTarget.current += diff * sensitivity;
-                    zoomTarget.current = THREE.MathUtils.clamp(zoomTarget.current, 12, 55);
-                }
-                lastTouchDistance.current = distance;
-            }
-        };
-
-        const onTouchEnd = () => {
-            lastTouchDistance.current = null;
-        };
-
         canvas.addEventListener('wheel', onWheel, { passive: false });
         canvas.addEventListener('pointerdown', onPointerDown);
         canvas.addEventListener('pointerup', onPointerUp);
         canvas.addEventListener('pointermove', onPointerMove);
-        canvas.addEventListener('pointerleave', onPointerUp);
-        canvas.addEventListener('pointercancel', onPointerUp);
-        canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-        canvas.addEventListener('touchmove', onTouchMove, { passive: false });
-        canvas.addEventListener('touchend', onTouchEnd);
-        canvas.addEventListener('touchcancel', onTouchEnd);
-
         return () => {
             canvas.removeEventListener('wheel', onWheel);
             canvas.removeEventListener('pointerdown', onPointerDown);
             canvas.removeEventListener('pointerup', onPointerUp);
             canvas.removeEventListener('pointermove', onPointerMove);
-            canvas.removeEventListener('pointerleave', onPointerUp);
-            canvas.removeEventListener('pointercancel', onPointerUp);
-            canvas.removeEventListener('touchstart', onTouchStart);
-            canvas.removeEventListener('touchmove', onTouchMove);
-            canvas.removeEventListener('touchend', onTouchEnd);
-            canvas.removeEventListener('touchcancel', onTouchEnd);
         };
     }, [gl, groupRef]);
 
@@ -168,29 +100,18 @@ const SceneController: React.FC<{
 
         if (groupRef.current) {
             if (isHandDetected) {
-                const HAND_ROTATION_FACTOR = Math.PI * 1.2; 
-                const targetHandRotation = currentInput.current.x * HAND_ROTATION_FACTOR;
+                const targetHandRotation = currentInput.current.x * Math.PI * 1.2;
                 if (!wasDetected.current) {
                     grabOffset.current = groupRef.current.rotation.y - targetHandRotation;
                     rotationVelocity.current = 0;
                 }
-                const targetAngle = targetHandRotation + grabOffset.current;
-                const smoothFactor = 6.0 * safeDelta;
-                const prevRot = groupRef.current.rotation.y;
-                groupRef.current.rotation.y = THREE.MathUtils.lerp(prevRot, targetAngle, smoothFactor);
-                rotationVelocity.current = (groupRef.current.rotation.y - prevRot);
+                groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetHandRotation + grabOffset.current, 6.0 * safeDelta);
                 wasDetected.current = true;
             } else {
-                if (wasDetected.current) {
-                    if (Math.abs(rotationVelocity.current) < 0.0001) {
-                        rotationVelocity.current = 0.002; 
-                    }
-                    wasDetected.current = false;
-                }
+                wasDetected.current = false;
                 if (!isDragging.current) {
                     groupRef.current.rotation.y += rotationVelocity.current;
-                    const baseSpeed = 0.002;
-                    rotationVelocity.current = THREE.MathUtils.lerp(rotationVelocity.current, baseSpeed, safeDelta * 0.5);
+                    rotationVelocity.current = THREE.MathUtils.lerp(rotationVelocity.current, 0.002, safeDelta * 0.5);
                 }
             }
         }
@@ -200,21 +121,22 @@ const SceneController: React.FC<{
 
 const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, userImages, signatureText }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const photoCount = (userImages && userImages.length > 0) ? userImages.length : 10;
-
+  
   return (
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
-      <ambientLight intensity={0.4} />
-      <spotLight position={[20, 20, 20]} angle={0.4} penumbra={1} intensity={2.0} color="#fff5d0" castShadow />
-      <pointLight position={[-10, 5, -10]} intensity={1.2} color="#00ff00" />
-      <pointLight position={[10, -5, 10]} intensity={1.2} color="#ff0000" />
-      <pointLight position={[0, 10, 10]} intensity={0.5} color="#ffffff" />
-      {/* FIXED: Removed 'public/' prefix for production build compatibility */}
-      <Environment files='/hdri/potsdamer_platz_1k.hdr' background={false} />
+      
+      {/* 增强备用光照：环境光和点光源强度增加，确保即使 HDR 贴图失败也能看到物体 */}
+      <ambientLight intensity={0.7} />
+      <pointLight position={[15, 15, 15]} intensity={2.5} color="#fff5e0" />
+      <directionalLight position={[-10, 10, 5]} intensity={1.5} color="#ffffff" />
+      
+      {/* 修正路径：去掉开头的斜杠。在 Vite 中，public 下的资源通常直接用相对路径更稳健 */}
+      <Environment files='hdri/potsdamer_platz_1k.hdr' background={false} />
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
       <Snow mixFactor={mixFactor} />
-      <group ref={groupRef} position={[0, 0, 0]}>
+      
+      <group ref={groupRef}>
         <TopStar mixFactor={mixFactor} />
         <Foliage mixFactor={mixFactor} colors={colors} />
         <SpiralLights mixFactor={mixFactor} />
@@ -223,11 +145,12 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
         <Ornaments mixFactor={mixFactor} type="STAR" count={25} scale={0.5} colors={STAR_COLORS} />
         <Ornaments mixFactor={mixFactor} type="CRYSTAL" count={40} scale={0.4} colors={CRYSTAL_COLORS} />
         <Ornaments mixFactor={mixFactor} type="CANDY" count={40} scale={0.8} colors={CANDY_COLORS} />
-        <Ornaments mixFactor={mixFactor} type="PHOTO" count={photoCount} userImages={userImages} signatureText={signatureText} />
+        <Ornaments mixFactor={mixFactor} type="PHOTO" count={userImages?.length || 10} userImages={userImages} signatureText={signatureText} />
       </group>
-      <EffectComposer enableNormalPass={false} multisampling={0}>
-        <Bloom luminanceThreshold={0.9} mipmapBlur intensity={1.2} radius={0.6} />
-        <Vignette eskil={false} offset={0.1} darkness={1.1} />
+
+      <EffectComposer multisampling={0}>
+        <Bloom luminanceThreshold={0.9} mipmapBlur intensity={1.0} radius={0.5} />
+        <Vignette offset={0.1} darkness={1.1} />
       </EffectComposer>
     </>
   );
@@ -236,10 +159,13 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
 const Experience: React.FC<ExperienceProps> = (props) => {
   return (
     <Canvas
-      dpr={[1, 1.25]} 
-      camera={{ position: [0, 0, 32], fov: 45, near: 5, far: 80 }}
-      gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
-      shadows
+      dpr={[1, 1.5]} 
+      camera={{ position: [0, 0, 32], fov: 45, near: 1, far: 200 }}
+      gl={{ 
+        antialias: true, 
+        toneMapping: THREE.ACESFilmicToneMapping, 
+        outputColorSpace: THREE.SRGBColorSpace 
+      }}
       style={{ touchAction: 'none' }}
     >
       <SceneContent {...props} />
