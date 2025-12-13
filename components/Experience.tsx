@@ -126,12 +126,12 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
       
-      {/* 增强备用光照：环境光和点光源强度增加，确保即使 HDR 贴图失败也能看到物体 */}
-      <ambientLight intensity={0.7} />
-      <pointLight position={[15, 15, 15]} intensity={2.5} color="#fff5e0" />
+      {/* 增强环境补光：即使贴图失败，树也会亮起 */}
+      <ambientLight intensity={1.0} />
+      <pointLight position={[10, 10, 10]} intensity={3.5} color="#fff5e0" />
       <directionalLight position={[-10, 10, 5]} intensity={1.5} color="#ffffff" />
       
-      {/* 修正路径：去掉开头的斜杠。在 Vite 中，public 下的资源通常直接用相对路径更稳健 */}
+      {/* 修正：去掉前面的斜杠。Vite 打包后资源会在当前目录的相对位置 */}
       <Environment files='hdri/potsdamer_platz_1k.hdr' background={false} />
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
       <Snow mixFactor={mixFactor} />
