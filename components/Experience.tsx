@@ -126,13 +126,13 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
       
-      {/* 环境光和直射光补强：即使资源加载慢，树体也是可见的 */}
-      <ambientLight intensity={0.8} />
-      <pointLight position={[10, 10, 10]} intensity={3.5} color="#fff5e0" />
-      <directionalLight position={[-10, 10, 5]} intensity={1.5} color="#ffffff" />
+      {/* 提升 AmbientLight 亮度：即使 HDR 资源全加载失败（EdgeOne 警告），树也不会黑屏 */}
+      <ambientLight intensity={1.2} />
+      <pointLight position={[10, 10, 10]} intensity={4.0} color="#fff5e0" />
+      <directionalLight position={[-10, 10, 5]} intensity={2.0} color="#ffffff" />
       
-      {/* 路径修正：确保相对于当前根目录 */}
-      <Environment files="./hdri/potsdamer_platz_1k.hdr" background={false} />
+      {/* 适配 EdgeOne Pages：去掉路径前的 "./" 以适应根目录部署 */}
+      <Environment files="hdri/potsdamer_platz_1k.hdr" background={false} />
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
       <Snow mixFactor={mixFactor} />
       
