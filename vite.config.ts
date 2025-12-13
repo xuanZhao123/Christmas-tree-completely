@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  base: './', // 确保相对路径在生产环境生效
   plugins: [react()],
   server: {
     port: 3000,
