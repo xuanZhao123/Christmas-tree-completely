@@ -8,16 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
     <style>
       :root {
-        /* 修复 EdgeOne 报告中的兼容性错误：改用标准属性并添加兼容前缀 */
-        text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%;
-        -moz-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
+        /* 修复 EdgeOne 报错：移除所有可能冲突的调整属性，仅保留标准盒模型设置 */
+        box-sizing: border-box;
+      }
+      *, ::before, ::after {
+        box-sizing: inherit;
       }
       body { 
         margin: 0; 
         background-color: #010a05; 
         overflow: hidden; 
+        -webkit-font-smoothing: antialiased;
       }
       .font-luxury { font-family: 'Cinzel', serif; }
       .font-body { font-family: 'Playfair Display', serif; }
@@ -47,7 +48,7 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- 核心修复：删除了之前手动添加的 importmap 脚本，由 Vite 自动接管打包 -->
+    <!-- 核心修复：移除所有手动 importmap，仅保留 Vite 入口 -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

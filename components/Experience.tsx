@@ -126,14 +126,15 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
       
-      {/* 增强型光照兜底：即使 HDR 资源 404 加载失败，由于环境光足够强，树也不会黑屏 */}
+      {/* 强力光照兜底方案：即便 HDR 加载失败变成黑色，这里的光源也能照亮整个树体 */}
       <ambientLight intensity={1.8} />
-      <pointLight position={[10, 10, 10]} intensity={4.0} color="#fff5e0" />
-      <directionalLight position={[-10, 10, 5]} intensity={3.0} color="#ffffff" />
+      <pointLight position={[10, 10, 10]} intensity={5.0} color="#fff5e0" />
+      <directionalLight position={[-10, 10, 5]} intensity={3.5} color="#ffffff" />
+      <spotLight position={[0, 20, 0]} intensity={2.0} angle={0.5} penumbra={1} color="#ffffff" />
       
-      {/* 使用 Suspense 包装 HDR 贴图，防止加载失败时阻塞整个场景渲染 */}
+      {/* 修正路径：使用绝对路径，并包裹在 Suspense 中防止阻塞渲染 */}
       <Suspense fallback={null}>
-        <Environment files="hdri/potsdamer_platz_1k.hdr" background={false} />
+        <Environment files="/hdri/potsdamer_platz_1k.hdr" background={false} />
       </Suspense>
       
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
@@ -152,7 +153,7 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
       </group>
 
       <EffectComposer multisampling={0}>
-        <Bloom luminanceThreshold={0.9} mipmapBlur intensity={1.0} radius={0.5} />
+        <Bloom luminanceThreshold={0.9} mipmapBlur intensity={1.2} radius={0.5} />
         <Vignette offset={0.1} darkness={1.1} />
       </EffectComposer>
     </>
@@ -166,6 +167,7 @@ const Experience: React.FC<ExperienceProps> = (props) => {
       camera={{ position: [0, 0, 32], fov: 45, near: 1, far: 200 }}
       gl={{ 
         antialias: true, 
+        alpha: false,
         toneMapping: THREE.ACESFilmicToneMapping, 
         outputColorSpace: THREE.SRGBColorSpace 
       }}

@@ -2,7 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './', 
+  // 核心修复：如果是 Pages 服务且在根目录，base 应设为 '/' 以确保资产路径正确
+  base: '/', 
   plugins: [react()],
   server: {
     port: 3000,
@@ -27,7 +28,7 @@ export default defineConfig({
     commonjsOptions: {
       include: [/node_modules/]
     },
-    sourcemap: false, // 禁用 sourcemap 以减少 EdgeOne 解析负载
+    sourcemap: false, 
     rollupOptions: {
       output: {
         manualChunks: {
