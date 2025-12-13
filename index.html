@@ -8,11 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
     <style>
       :root {
-        /* 修复 EdgeOne 报告中的兼容性错误：添加标准属性并设置正确值 */
+        /* 修复 EdgeOne 报告中的兼容性错误：改用标准属性并添加兼容前缀 */
+        text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
         -moz-text-size-adjust: 100%;
         -ms-text-size-adjust: 100%;
-        text-size-adjust: 100%;
       }
       body { 
         margin: 0; 
@@ -47,7 +47,7 @@
 </head>
   <body>
     <div id="root"></div>
-    <!-- 核心修复：Vite 项目不需要手动在 HTML 里写 importmap -->
+    <!-- 核心修复：删除了之前手动添加的 importmap 脚本，由 Vite 自动接管打包 -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

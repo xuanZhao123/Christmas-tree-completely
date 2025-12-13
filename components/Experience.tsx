@@ -1,6 +1,6 @@
 // Fix: Bypassing JSX intrinsic element type errors for Three.js tags in R3F environment
 // @ts-nocheck
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, Stars } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
@@ -126,13 +126,16 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
       
-      {/* 提升 AmbientLight 亮度：即使 HDR 资源全加载失败（EdgeOne 警告），树也不会黑屏 */}
-      <ambientLight intensity={1.2} />
+      {/* 增强型光照兜底：即使 HDR 资源 404 加载失败，由于环境光足够强，树也不会黑屏 */}
+      <ambientLight intensity={1.8} />
       <pointLight position={[10, 10, 10]} intensity={4.0} color="#fff5e0" />
-      <directionalLight position={[-10, 10, 5]} intensity={2.0} color="#ffffff" />
+      <directionalLight position={[-10, 10, 5]} intensity={3.0} color="#ffffff" />
       
-      {/* 适配 EdgeOne Pages：去掉路径前的 "./" 以适应根目录部署 */}
-      <Environment files="hdri/potsdamer_platz_1k.hdr" background={false} />
+      {/* 使用 Suspense 包装 HDR 贴图，防止加载失败时阻塞整个场景渲染 */}
+      <Suspense fallback={null}>
+        <Environment files="hdri/potsdamer_platz_1k.hdr" background={false} />
+      </Suspense>
+      
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
       <Snow mixFactor={mixFactor} />
       
@@ -166,7 +169,7 @@ const Experience: React.FC<ExperienceProps> = (props) => {
         toneMapping: THREE.ACESFilmicToneMapping, 
         outputColorSpace: THREE.SRGBColorSpace 
       }}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', background: '#010a05' }}
     >
       <SceneContent {...props} />
     </Canvas>

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './', // 确保相对路径在生产环境生效
+  base: './', 
   plugins: [react()],
   server: {
     port: 3000,
@@ -14,7 +14,10 @@ export default defineConfig({
       '@tensorflow/tfjs-converter',
       '@tensorflow/tfjs-backend-webgl',
       '@tensorflow/tfjs-backend-cpu',
-      '@tensorflow-models/handpose'
+      '@tensorflow-models/handpose',
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei'
     ]
   },
   publicDir: 'public',
@@ -23,6 +26,15 @@ export default defineConfig({
     assetsDir: 'assets',
     commonjsOptions: {
       include: [/node_modules/]
+    },
+    sourcemap: false, // 禁用 sourcemap 以减少 EdgeOne 解析负载
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          vendor: ['react', 'react-dom']
+        }
+      }
     }
   }
 });
