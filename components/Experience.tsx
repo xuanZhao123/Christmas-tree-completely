@@ -126,13 +126,12 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef, 
     <>
       <SceneController inputRef={inputRef} groupRef={groupRef} />
       
-      {/* 强力光照兜底方案：即便 HDR 加载失败变成黑色，这里的光源也能照亮整个树体 */}
+      {/* 强力光照：即使 HDR 加载失败，由于环境光极强，树也不会黑屏 */}
       <ambientLight intensity={1.8} />
       <pointLight position={[10, 10, 10]} intensity={5.0} color="#fff5e0" />
       <directionalLight position={[-10, 10, 5]} intensity={3.5} color="#ffffff" />
-      <spotLight position={[0, 20, 0]} intensity={2.0} angle={0.5} penumbra={1} color="#ffffff" />
       
-      {/* 修正路径：使用绝对路径，并包裹在 Suspense 中防止阻塞渲染 */}
+      {/* 修正：使用带斜杠的绝对路径，并包裹在 Suspense 中 */}
       <Suspense fallback={null}>
         <Environment files="/hdri/potsdamer_platz_1k.hdr" background={false} />
       </Suspense>
@@ -167,7 +166,7 @@ const Experience: React.FC<ExperienceProps> = (props) => {
       camera={{ position: [0, 0, 32], fov: 45, near: 1, far: 200 }}
       gl={{ 
         antialias: true, 
-        alpha: false,
+        alpha: false, // 禁用透明，防止背景穿透导致黑屏感
         toneMapping: THREE.ACESFilmicToneMapping, 
         outputColorSpace: THREE.SRGBColorSpace 
       }}
